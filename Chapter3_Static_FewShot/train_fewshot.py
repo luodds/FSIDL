@@ -33,7 +33,7 @@ class DatasetWrapper(torch.utils.data.Dataset):
 
 def train_few_shot():
     # --- 配置 ---
-    N_SHOTS = 5
+    N_SHOTS = 10
     EPOCHS = 30
     BATCH_SIZE = 64
     LR = 0.01
@@ -70,54 +70,54 @@ def train_few_shot():
     # --- 记录数据用于绘图 ---
     history = {'train_loss': [], 'train_acc': [], 'test_acc': []}
 
-    # # --- 训练循环 ---
-    # best_acc = 0.0
-    # print(f"[Info] 开始训练... 结果将保存至 {SAVE_DIR}")
+    # --- 训练循环 ---
+    best_acc = 0.0
+    print(f"[Info] 开始训练... 结果将保存至 {SAVE_DIR}")
 
-    # for epoch in range(1, EPOCHS + 1):
-    #     model.train()
-    #     total_loss = 0; correct = 0; total = 0
+    for epoch in range(1, EPOCHS + 1):
+        model.train()
+        total_loss = 0; correct = 0; total = 0
         
-    #     for images, labels in train_loader:
-    #         images, labels = images.to(DEVICE), labels.to(DEVICE)
-    #         optimizer.zero_grad()
-    #         outputs = model(images)
-    #         loss = criterion(outputs, labels)
-    #         loss.backward()
-    #         optimizer.step()
+        for images, labels in train_loader:
+            images, labels = images.to(DEVICE), labels.to(DEVICE)
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
             
-    #         total_loss += loss.item()
-    #         _, predicted = outputs.max(1)
-    #         total += labels.size(0)
-    #         correct += predicted.eq(labels).sum().item()
+            total_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
             
-    #     train_acc = 100. * correct / total
+        train_acc = 100. * correct / total
         
-    #     # 验证
-    #     model.eval()
-    #     test_correct = 0; test_total = 0
-    #     with torch.no_grad():
-    #         for images, labels in test_loader:
-    #             images, labels = images.to(DEVICE), labels.to(DEVICE)
-    #             outputs = model(images)
-    #             _, predicted = outputs.max(1)
-    #             test_total += labels.size(0)
-    #             test_correct += predicted.eq(labels).sum().item()
+        # 验证
+        model.eval()
+        test_correct = 0; test_total = 0
+        with torch.no_grad():
+            for images, labels in test_loader:
+                images, labels = images.to(DEVICE), labels.to(DEVICE)
+                outputs = model(images)
+                _, predicted = outputs.max(1)
+                test_total += labels.size(0)
+                test_correct += predicted.eq(labels).sum().item()
         
-    #     test_acc = 100. * test_correct / test_total
+        test_acc = 100. * test_correct / test_total
         
-    #     # 记录历史
-    #     history['train_loss'].append(total_loss)
-    #     history['train_acc'].append(train_acc)
-    #     history['test_acc'].append(test_acc)
+        # 记录历史
+        history['train_loss'].append(total_loss)
+        history['train_acc'].append(train_acc)
+        history['test_acc'].append(test_acc)
 
-    #     print(f"Epoch {epoch}: Train Loss={total_loss:.4f}, Test Acc={test_acc:.2f}%")
+        print(f"Epoch {epoch}: Train Loss={total_loss:.4f}, Test Acc={test_acc:.2f}%")
         
-    #     if test_acc > best_acc:
-    #         best_acc = test_acc
-    #         torch.save(model.state_dict(), os.path.join(SAVE_DIR, 'best_fewshot_model.pth'))
+        if test_acc > best_acc:
+            best_acc = test_acc
+            torch.save(model.state_dict(), os.path.join(SAVE_DIR, 'best_fewshot_model.pth'))
 
-    # print(f"[Done] 训练结束。最高准确率: {best_acc:.2f}%")
+    print(f"[Done] 训练结束。最高准确率: {best_acc:.2f}%")
 
     # ==========================================
     #              可视化阶段
@@ -135,7 +135,7 @@ def train_few_shot():
     model.eval()
     
     # --- 均衡采样配置 ---
-    SAMPLES_PER_CLASS = 200  # 每个类别只取 200 个样本画图，保证图像清晰且计算快
+    SAMPLES_PER_CLASS = 10000  # 每个类别只取 200 个样本画图，保证图像清晰且计算快
     num_classes = len(class_names)
     class_counts = {i: 0 for i in range(num_classes)} # 计数器: {0: 0, 1: 0, ...}
     
